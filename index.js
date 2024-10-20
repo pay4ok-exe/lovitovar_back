@@ -12,6 +12,7 @@ const { registerValidation } = require("./validation/auth");
 const { validationResult } = require("express-validator");
 
 const User = require("./models/User.js");
+const Middleware = require("./utils/middleware.js");
 
 mongoose
   .connect("mongodb+srv://pay4ok:2005@cluster0.kppew.mongodb.net/users")
@@ -100,6 +101,31 @@ app.post("/login", async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Не удалось авторизоваться!" });
+  }
+});
+
+app.get("/profile", Middleware, async (req, res) => {
+  //
+
+  try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Пользователь не найден.",
+      });
+    }
+
+    const { passwordHash, ...userData } = user._doc;
+
+    res.json({
+      ...userData,
+    });
+    res.json({
+      success: true,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Нет доступа!" });
   }
 });
 
