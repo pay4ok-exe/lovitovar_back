@@ -13,8 +13,7 @@ const {
   productCreateValidation,
 } = require("./validation/validations.js");
 
-const Middleware = require("./utils/middleware.js");
-const { handleValidationErrors } = require("./utils/handleValidationErrors.js");
+const { Middleware, handleValidationErrors } = require("./utils/index.js");
 
 const { register, login, profile } = require("./controllers/UserController.js");
 const {
