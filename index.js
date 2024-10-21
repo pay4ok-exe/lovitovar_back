@@ -5,6 +5,7 @@
 // import { validationResult } from "express-validator";
 
 const express = require("express");
+const multer = require("multer");
 const mongoose = require("mongoose");
 const {
   registerValidation,
@@ -31,11 +32,29 @@ mongoose
 
 const app = express();
 
+const storage = multer.diskStorage({
+  destination: (_, __, cb) => {
+    cb(null, "uploads");
+  },
+  filename: (_, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 
 app.post("/register", registerValidation, register);
 app.post("/login", loginValidation, login);
 app.get("/profile", Middleware, profile);
+
+app.post("/upload", Middleware, upload.single("image"), (req, res) => {
+  res.json({
+    url: `/uploads/${req.file.originalname}`,
+  });
+});
 
 app.get("/products", getAll);
 app.get("/products/:id", getOne);
