@@ -14,6 +14,8 @@ const {
 } = require("./validation/validations.js");
 
 const Middleware = require("./utils/middleware.js");
+const { handleValidationErrors } = require("./utils/handleValidationErrors.js");
+
 const { register, login, profile } = require("./controllers/UserController.js");
 const {
   create,
@@ -46,8 +48,8 @@ const upload = multer({ storage });
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
-app.post("/register", registerValidation, register);
-app.post("/login", loginValidation, login);
+app.post("/register", registerValidation, handleValidationErrors, register);
+app.post("/login", loginValidation, handleValidationErrors, login);
 app.get("/profile", Middleware, profile);
 
 app.post("/upload", Middleware, upload.single("image"), (req, res) => {
@@ -58,9 +60,21 @@ app.post("/upload", Middleware, upload.single("image"), (req, res) => {
 
 app.get("/products", getAll);
 app.get("/products/:id", getOne);
-app.post("/products", Middleware, productCreateValidation, create);
+app.post(
+  "/products",
+  Middleware,
+  productCreateValidation,
+  handleValidationErrors,
+  create
+);
 app.delete("/products/:id", Middleware, remove);
-app.patch("/products/:id", Middleware, update);
+app.patch(
+  "/products/:id",
+  Middleware,
+  productCreateValidation,
+  handleValidationErrors,
+  update
+);
 
 app.get("/", (req, res) => {
   res.json({

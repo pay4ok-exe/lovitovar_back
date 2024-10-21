@@ -1,11 +1,11 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const { validationResult } = require("express-validator");
 const User = require("../models/User.js");
 
 // Register function
 const register = async (req, res) => {
   try {
+
     const { username, email, password, phone } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
 
