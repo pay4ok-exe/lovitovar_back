@@ -6,10 +6,21 @@
 
 const express = require("express");
 const mongoose = require("mongoose");
-const { registerValidation } = require("./validation/auth");
+const {
+  registerValidation,
+  loginValidation,
+  productCreateValidation,
+} = require("./validation/validations.js");
 
 const Middleware = require("./utils/middleware.js");
 const { register, login, profile } = require("./controllers/UserController.js");
+const {
+  create,
+  getAll,
+  getOne,
+  remove,
+  update,
+} = require("./controllers/ProductController.js");
 
 mongoose
   .connect("mongodb+srv://pay4ok:2005@cluster0.kppew.mongodb.net/users")
@@ -23,8 +34,14 @@ const app = express();
 app.use(express.json());
 
 app.post("/register", registerValidation, register);
-app.post("/login", login);
+app.post("/login", loginValidation, login);
 app.get("/profile", Middleware, profile);
+
+app.get("/products", getAll);
+app.get("/products/:id", getOne);
+app.post("/products", Middleware, productCreateValidation, create);
+app.delete("/products/:id", Middleware, remove);
+app.patch("/products/:id", Middleware, update);
 
 app.get("/", (req, res) => {
   res.json({
