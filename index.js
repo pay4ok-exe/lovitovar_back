@@ -6,6 +6,7 @@
 
 const express = require("express");
 const multer = require("multer");
+const cors = require("cors");
 const mongoose = require("mongoose");
 const {
   registerValidation,
@@ -15,7 +16,14 @@ const {
 
 const { Middleware, handleValidationErrors } = require("./utils/index.js");
 
-const { register, login, profile } = require("./controllers/UserController.js");
+const {
+  register,
+  login,
+  profile,
+  forgotPassword,
+  verifyResetToken,
+  confirmPassword,
+} = require("./controllers/UserController.js");
 const {
   create,
   getAll,
@@ -45,10 +53,17 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 app.use(express.json());
+app.use(cors());
 app.use("/uploads", express.static("uploads"));
 
 app.post("/register", registerValidation, handleValidationErrors, register);
 app.post("/login", loginValidation, handleValidationErrors, login);
+app.post("/forgot-password", handleValidationErrors, forgotPassword);
+
+// app.post("/forgot-password", forgotPassword);
+app.post("/verify-code", handleValidationErrors, verifyResetToken);
+app.post("/confirm-password", handleValidationErrors, confirmPassword);
+
 app.get("/profile", Middleware, profile);
 
 app.post("/upload", Middleware, upload.single("image"), (req, res) => {
