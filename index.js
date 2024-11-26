@@ -33,6 +33,7 @@ const {
   remove,
   update,
   getMyProducts,
+  getAllByName,
 } = require("./controllers/ProductController.js");
 
 // Подключение к MongoDB
@@ -164,6 +165,7 @@ app.post("/createProduct", Middleware, async (req, res) => {
 
 app.get("/my-products", Middleware, getMyProducts);
 
+app.get("/products", getAllByName);
 app.get("/products", getAll);
 app.get("/products/:id", getOne);
 app.delete("/products/:id", Middleware, remove);

@@ -24,6 +24,35 @@ const create = async (req, res) => {
   }
 };
 
+const getAllByName = async (req, res) => {
+  try {
+    const { name } = req.query; // Get the 'name' query parameter from the request
+
+    // Build a dynamic filter
+    const filter = {};
+    if (name) {
+      // Use a case-insensitive regex to match product names
+      filter.productName = { $regex: name, $options: "i" }; // 'i' for case-insensitive
+    }
+
+    // Fetch products matching the filter
+    const products = await Product.find(filter)
+      .limit(50) // Limit the number of results for performance
+      .exec();
+
+    res.json({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.error("Ошибка при получении продуктов:", error);
+    res.status(500).json({
+      success: false,
+      message: "Не удалось получить продукты.",
+    });
+  }
+};
+
 const getAll = async (req, res) => {
   try {
     // Fetch products where isActive is true
@@ -157,4 +186,5 @@ module.exports = {
   remove,
   update,
   getMyProducts,
+  getAllByName,
 };
