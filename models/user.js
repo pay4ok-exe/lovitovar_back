@@ -1,7 +1,13 @@
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require("uuid"); // Импортируем метод для генерации UUID
 
-const UserSchema = new mongoose.Schema(
+const User = new mongoose.Schema(
   {
+    userId: {
+      type: String,
+      default: uuidv4, // Устанавливаем генерацию UUID по умолчанию
+      unique: true, // Уникальный идентификатор пользователя
+    },
     username: {
       type: String,
       required: true,
@@ -22,7 +28,7 @@ const UserSchema = new mongoose.Schema(
     resetPasswordCode: { type: String },
     resetPasswordExpires: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true } // Автоматически добавляет поля createdAt и updatedAt
 );
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("User", User);

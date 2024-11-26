@@ -100,7 +100,7 @@ const forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "User not found!" });
+      return res.status(404).json({ message: "Пользователь не найден!" });
     }
 
     // Generate a 4-digit verification code
@@ -123,9 +123,11 @@ const forgotPassword = async (req, res) => {
     const mailOptions = {
       to: user.email,
       from: process.env.EMAIL_USER, // Use the email from the environment variables
-      subject: "Password Reset Code",
-      text: `You are receiving this because you (or someone else) have requested a password reset. 
-      Please use the following 4-digit code to reset your password: ${resetCode}`,
+      subject: "Код для сброса пароля",
+      text: `Вы получили это письмо, потому что вы (или кто-то другой) запросили сброс пароля. 
+      Пожалуйста, используйте следующий 4-значный код для сброса вашего пароля: ${resetCode}
+      
+      Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо.`,
     };
 
     // Send the email
@@ -232,6 +234,74 @@ const profile = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.userId; // Extract the user's ID from middleware
+    const { username, email, phone } = req.body;
+
+    // Validate the required fields (optional)
+    if (!username || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Имя пользователя и email обязательны.",
+      });
+    }
+
+    // Update the user in the database
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { username, email, phone },
+      { new: true, runValidators: true } // Return the updated user and apply validation
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Пользователь не найден.",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Профиль успешно обновлен.",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error("Ошибка при обновлении профиля:", error);
+    res.status(500).json({
+      success: false,
+      message: "Ошибка сервера. Попробуйте позже.",
+    });
+  }
+};
+
+const deleteProfile = async (req, res) => {
+  try {
+    const userId = req.userId; // Extract the user's ID from middleware
+
+    // Find and delete the user
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Пользователь не найден.",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Аккаунт успешно удален.",
+    });
+  } catch (error) {
+    console.error("Ошибка при удалении профиля:", error);
+    res.status(500).json({
+      success: false,
+      message: "Ошибка сервера. Попробуйте позже.",
+    });
+  }
+};
+
 // Exporting all the functions
 module.exports = {
   register,
@@ -240,4 +310,6 @@ module.exports = {
   forgotPassword,
   verifyResetToken,
   confirmPassword,
+  updateProfile,
+  deleteProfile,
 };

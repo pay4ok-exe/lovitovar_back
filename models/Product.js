@@ -1,7 +1,12 @@
 const mongoose = require("mongoose");
-
-const ProductSchema = new mongoose.Schema(
+const { v4: uuidv4 } = require("uuid");
+const Product = new mongoose.Schema(
   {
+    productId: {
+      type: String,
+      default: uuidv4, // Устанавливаем генерацию UUID по умолчанию
+      unique: true, // Уникальный идентификатор пользователя
+    },
     productName: {
       type: String,
       required: true,
@@ -15,20 +20,28 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
     imagesUrl: {
-      type: [String], // Array of image URLs
+      type: [String], // Массив ссылок на изображения
       required: false,
     },
     description: {
       type: String,
       required: true,
     },
-    user: {
-      type: mongoose.Schema.Types.ObjectId, // Reference to User model
+    userId: {
+      type: mongoose.Schema.Types.ObjectId, // Связь с моделью User
       ref: "User",
       required: true,
     },
+    isActive: {
+      type: Boolean,
+      default: true, // По умолчанию продукт активен
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false, // По умолчанию продукт не удален
+    },
   },
-  { timestamps: true } // Automatically adds createdAt and updatedAt fields
+  { timestamps: true } // Автоматически добавляет поля createdAt и updatedAt
 );
 
-module.exports = mongoose.model("Product", ProductSchema);
+module.exports = mongoose.model("Product", Product);

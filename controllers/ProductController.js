@@ -26,21 +26,55 @@ const create = async (req, res) => {
 
 const getAll = async (req, res) => {
   try {
-    const products = await Product.find().populate("user").exec();
+    // Fetch products where isActive is true
+    const products = await Product.find({ isActive: true })
+      // .limit(30) // Limit the number of products
+      .exec();
+
     res.json({
+      success: true,
       products,
     });
   } catch (error) {
+    console.error("Ошибка при получении объявлений:", error);
     res
       .status(500)
-      .json({ success: false, message: "Не удалось получить объявлении!" });
+      .json({ success: false, message: "Не удалось получить объявления!" });
+  }
+};
+
+const getMyProducts = async (req, res) => {
+  try {
+    const userId = req.userId; // Extract the userId from the Middleware (authenticated user)
+
+    // Fetch products belonging to the user, excluding deleted products
+    const myProducts = await Product.find({ userId, isDeleted: false }).sort({
+      createdAt: -1,
+    });
+
+    res.json({
+      success: true,
+      message: "Список ваших объявлений успешно получен.",
+      products: myProducts,
+    });
+  } catch (error) {
+    console.error("Ошибка при получении объявлений пользователя:", error);
+    res.status(500).json({
+      success: false,
+      message: "Ошибка при получении объявлений. Попробуйте снова.",
+    });
   }
 };
 
 const getOne = async (req, res) => {
   try {
     const productId = req.params.id;
-    const product = await Product.findById(productId).populate("user").exec();
+
+    // Find the product by ID and populate the user data
+    const product = await Product.findById(productId)
+      .populate("userId", "username phone email") // Populate user data, selecting specific fields
+      .exec();
+
     if (!product) {
       return res
         .status(404)
@@ -48,15 +82,16 @@ const getOne = async (req, res) => {
     }
 
     res.json({
+      success: true,
       product,
     });
   } catch (error) {
+    console.error("Ошибка при получении объявления:", error);
     res
       .status(500)
-      .json({ success: false, message: "Не удалось получить объявлению!" });
+      .json({ success: false, message: "Не удалось получить объявление!" });
   }
 };
-
 const remove = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -81,29 +116,23 @@ const remove = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { productName, categoryName, price, imagesUrl, description } = req.body;
+  console.log("PATCH /products/:id called with:", req.body);
+
   try {
     const productId = req.params.id;
 
-    // Update the product by its ID
-    const updatedProduct = await Product.findByIdAndUpdate(
-      productId, // Filter by product ID
-      {
-        productName,
-        categoryName,
-        price,
-        imagesUrl,
-        description,
-        user: req.userId,
-      },
-      { new: true, runValidators: true } // Return the updated product and run validators
+    // Check if the product exists and belongs to the user
+    const updatedProduct = await Product.findOneAndUpdate(
+      { _id: productId, userId: req.userId }, // Ensure the product belongs to the user
+      req.body, // Update with the fields provided in the request body
+      { new: true, runValidators: true } // Return the updated product and validate inputs
     );
 
-    // Check if the product was found and updated
     if (!updatedProduct) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Объявление не найдено!" });
+      return res.status(404).json({
+        success: false,
+        message: "Объявление не найдено или недоступно для обновления!",
+      });
     }
 
     res.json({
@@ -112,9 +141,12 @@ const update = async (req, res) => {
       product: updatedProduct,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Не удалось обновить объявление!" });
+    console.error("Ошибка при обновлении объявления:", error);
+    res.status(500).json({
+      success: false,
+      message: "Не удалось обновить объявление.",
+      error: error.message,
+    });
   }
 };
 
@@ -124,4 +156,5 @@ module.exports = {
   getOne,
   remove,
   update,
+  getMyProducts,
 };
