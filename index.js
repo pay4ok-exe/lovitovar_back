@@ -74,6 +74,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+const setupSwagger = require("./swagger");
+setupSwagger(app);
+
 app.post("/register", registerValidation, handleValidationErrors, register);
 app.post("/login", loginValidation, handleValidationErrors, login);
 app.post("/forgot-password", handleValidationErrors, forgotPassword);

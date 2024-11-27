@@ -15,6 +15,38 @@ const transporter = nodemailer.createTransport({
 });
 
 // Register function
+/**
+ * @swagger
+ * /register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: The username of the user
+ *               email:
+ *                 type: string
+ *                 description: The email address of the user
+ *               password:
+ *                 type: string
+ *                 description: The password of the user
+ *               phone:
+ *                 type: string
+ *                 description: The phone number of the user
+ *     responses:
+ *       200:
+ *         description: Successfully registered user
+ *       500:
+ *         description: Server error
+ */
+
 const register = async (req, res) => {
   try {
     const { username, email, password, phone } = req.body;
@@ -54,6 +86,34 @@ const register = async (req, res) => {
 };
 
 // Login function
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: Login user
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email address of the user
+ *               password:
+ *                 type: string
+ *                 description: The password of the user
+ *     responses:
+ *       200:
+ *         description: Successfully logged in user
+ *       404:
+ *         description: Invalid credentials
+ *       500:
+ *         description: Server error
+ */
+
 const login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -94,6 +154,31 @@ const login = async (req, res) => {
       .json({ success: false, message: "Не удалось авторизоваться!" });
   }
 };
+
+/**
+ * @swagger
+ * /forgot-password:
+ *   post:
+ *     summary: Request a password reset
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email address of the user
+ *     responses:
+ *       200:
+ *         description: Reset code sent to email
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
@@ -143,6 +228,33 @@ const forgotPassword = async (req, res) => {
 };
 
 // Verify Reset Token Function
+/**
+ * @swagger
+ * /verify-code:
+ *   post:
+ *     summary: Verify the reset code sent to email
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email address of the user
+ *               code:
+ *                 type: string
+ *                 description: The reset code sent to email
+ *     responses:
+ *       200:
+ *         description: Token verified successfully
+ *       400:
+ *         description: Invalid or expired token
+ *       500:
+ *         description: Server error
+ */
 const verifyResetToken = async (req, res) => {
   const { email, code } = req.body;
   try {
@@ -175,6 +287,36 @@ const verifyResetToken = async (req, res) => {
 };
 
 // Confirm Password Function
+/**
+ * @swagger
+ * /confirm-password:
+ *   post:
+ *     summary: Reset user password
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email address of the user
+ *               code:
+ *                 type: string
+ *                 description: The reset code sent to email
+ *               newPassword:
+ *                 type: string
+ *                 description: The new password for the user
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Invalid or expired token
+ *       500:
+ *         description: Server error
+ */
 const confirmPassword = async (req, res) => {
   const { email, code, newPassword } = req.body;
   try {
@@ -215,6 +357,22 @@ const confirmPassword = async (req, res) => {
 };
 
 // Profile function
+/**
+ * @swagger
+ * /profile:
+ *   get:
+ *     summary: Get user profile
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: [] # Add this if you use JWT for authentication
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved profile
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: No access or server error
+ */
 const profile = async (req, res) => {
   try {
     const user = await User.findById(req.userId);
@@ -234,6 +392,38 @@ const profile = async (req, res) => {
   }
 };
 
+/**
+ * @swagger
+ * /profile:
+ *   put:
+ *     summary: Update user profile
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: [] # Add this if you use JWT for authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: Updated username
+ *               email:
+ *                 type: string
+ *                 description: Updated email address
+ *               phone:
+ *                 type: string
+ *                 description: Updated phone number
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 const updateProfile = async (req, res) => {
   try {
     const userId = req.userId; // Extract the user's ID from middleware
@@ -275,6 +465,22 @@ const updateProfile = async (req, res) => {
   }
 };
 
+/**
+ * @swagger
+ * /profile:
+ *   delete:
+ *     summary: Delete user profile
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: [] # Add this if you use JWT for authentication
+ *     responses:
+ *       200:
+ *         description: Successfully deleted profile
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 const deleteProfile = async (req, res) => {
   try {
     const userId = req.userId; // Extract the user's ID from middleware
